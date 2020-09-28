@@ -1,49 +1,72 @@
-import React, { useEffect, useState } from 'react'
-import { Table, Label, Menu, Container, Button, Checkbox } from 'semantic-ui-react'
+import React, { useContext, useEffect, useReducer, useState } from 'react'
+import { Table, Container, Button, Loader } from 'semantic-ui-react'
 import Icon from 'semantic-ui-react/dist/commonjs/elements/Icon'
 import axios from 'axios';
-import { deleteUser } from '../api/api';
 import { UserModal } from '../components/UserModal';
+import { StateContext } from '../api/state';
 
-export const AdminPanel = () => {
+export const AdminPanel = (props) => {
+
     const [loading, setLoading] = useState(true);
-    const [data, setData] = useState();
-    const [users, setUsers] = useState([]);
+    // const [data, setData] = useState([]);
     const [isModal, setIsModal] = useState(false);
+    const [actionType, setActionType] = useState('');
+    const [user, setUser] = useState([]);
+    const [] = useState([]);
+
+
+
+
+    const state = useContext(StateContext);
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            const result = await axios(
-                'https://reqres.in/api/users',
-            );
-            setData(result.data.data);
-            setLoading(false);
-        };
-        fetchData();
+        setLoading(false);
+    }, [])
 
-    }, []);
+    const handleData = (item, type) => {
+        setUser(item);
+        setActionType(type);
+        setIsModal(true);
 
-    const onDeleteUser = (id) => {
-        deleteUser(id);
-        console.log(id)
     }
 
-    const showModal = () => {
-        
+
+
+    // useEffect(() => {
+    //     const fetchData = async (tabNum) => {
+    //         setLoading(true);
+    //         const result = await axios( 
+    //             `https://testapadters.homebank.kz/avaya-integration/api/Avaya/records/${tabNum}`,
+    //         );
+    //         setData(result.data);
+    //         setLoading(false);
+    //     };
+    //     fetchData();
+
+    // }, [tabnum]);
+
+
+    const closeModal = () => {
+        setIsModal(false);
+        console.log('modal closed')
+    }
+
+    const openModal = (_, type) => {
+        setActionType(type);
+        if(type === 'add'){
+            setUser({ id: '', tabNum: '', first_name: '', last_name: '', email: '' });
+        }
         setIsModal(true);
     }
-
-    const closeModal = () => setIsModal(false);
+    // debugger
 
     return (
         <div>
-            <UserModal isModal={isModal} closeModal={closeModal} />
             <Container>
                 <Table celled >
                     <Table.Header>
                         <Table.Row textAlign="center">
-                            <Table.HeaderCell>ID</Table.HeaderCell>
+                            <Table.HeaderCell>Табельный номер</Table.HeaderCell>
                             <Table.HeaderCell>Firstname</Table.HeaderCell>
                             <Table.HeaderCell>Lastname</Table.HeaderCell>
                             <Table.HeaderCell>Email</Table.HeaderCell>
@@ -53,23 +76,33 @@ export const AdminPanel = () => {
 
                     <Table.Body>
                         {!loading ?
-                            data.map(items => (
-                                <Table.Row>
-                                    <Table.Cell textAlign="center">{items.id}</Table.Cell>
+                            state.data.map(items => (
+                                <Table.Row key={items.id}>
+                                    <Table.Cell textAlign="center">{items.tabNum}</Table.Cell>
                                     <Table.Cell>{items.first_name}</Table.Cell>
                                     <Table.Cell>{items.last_name}</Table.Cell>
                                     <Table.Cell>{items.email}</Table.Cell>
                                     <Table.Cell textAlign="center">
                                         <Button
-                                            icon
+                                            icon='edit'
+                                            primary
+                                            size='small'
+                                            onClick={() => handleData(items, 'edit')}>
+                                        </Button>
+                                        <Button
+                                            icon="delete"
                                             negative
                                             size='small'
-                                            onClick={() => onDeleteUser(items.id)}> Delete
-                                </Button>
+                                            onClick={() => { state.deleteUser(items.id) }}>
+                                        </Button>
+
 
                                     </Table.Cell>
                                 </Table.Row>
-                            )) : ''
+                            )) :
+                            <Table.Cell> <Loader active /></Table.Cell>
+
+
                         }
                     </Table.Body>
                     <Table.Footer fullWidth>
@@ -82,7 +115,7 @@ export const AdminPanel = () => {
                                     labelPosition='left'
                                     primary
                                     size='small'
-                                    onClick={() => showModal(true)}
+                                    onClick={() => openModal(true, 'add')}
                                 >
                                     <Icon name='user' /> Add User
                                 </Button>
@@ -90,6 +123,13 @@ export const AdminPanel = () => {
                         </Table.Row>
                     </Table.Footer>
                 </Table>
+                {
+                    actionType === 'add' ? <UserModal open={isModal} closeModal={closeModal} actionType={actionType} user={user}  /> : ''
+                }
+
+                {
+                    actionType === 'edit' ? <UserModal open={isModal} closeModal={closeModal} actionType={actionType} user={user} /> : ''
+                }
             </Container>
         </div>
     )

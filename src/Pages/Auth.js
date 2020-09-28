@@ -4,8 +4,8 @@ import { Grid, Header, Form, Segment, Button } from 'semantic-ui-react'
 export const Auth = (props) => {
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [err, setErr] = useState(false);
+    //const [loading, setLoading] = useState(true);
+    const [err] = useState(false);
 
 
     return (
@@ -18,14 +18,14 @@ export const Auth = (props) => {
                         <Segment >
                             <Form.Input fluid icon='user' onChange={e => setLogin(e.target.value)} value={login} name={'login'} iconPosition='left' placeholder='Имя пользователя' />
                             <Form.Input
-                                fluid
-                                onChange={''}
+                                fluid       
                                 icon='lock'
                                 name={'password'}
                                 iconPosition='left'
                                 placeholder='Пароль'
                                 type='password'
-                                onChange={e => setPassword(e.target.value)} value={password}
+                                onChange={e => setPassword(e.target.value)} 
+                                value={password}
                             />
                             <Button onClick={() => props.setAuth(true)}>  Вход   </Button>
                         </Segment>
